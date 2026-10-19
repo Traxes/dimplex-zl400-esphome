@@ -1,0 +1,95 @@
+== 1. Input HIGH margin (AUS active): weakest corner, all five active (max D7 drop)
+  T=-10.0 Vdev=21.6: GPIO=3.092 V (VIH 2.40), IF=1.83 mA
+  T=-10.0 Vdev=24.0: GPIO=3.097 V (VIH 2.40), IF=2.06 mA
+  T=-10.0 Vdev=30.0: GPIO=3.106 V (VIH 2.40), IF=2.66 mA
+  T= 25.0 Vdev=21.6: GPIO=3.073 V (VIH 2.40), IF=1.83 mA
+  T= 25.0 Vdev=24.0: GPIO=3.079 V (VIH 2.40), IF=2.06 mA
+  T= 25.0 Vdev=30.0: GPIO=3.091 V (VIH 2.40), IF=2.66 mA
+  T= 60.0 Vdev=21.6: GPIO=3.049 V (VIH 2.40), IF=1.83 mA
+  T= 60.0 Vdev=24.0: GPIO=3.057 V (VIH 2.40), IF=2.07 mA
+  T= 60.0 Vdev=30.0: GPIO=3.072 V (VIH 2.40), IF=2.66 mA
+  -> weakest corner reads HIGH down to Vdev = 10.24 V at -10.0 C
+  -> weakest corner reads HIGH down to Vdev = 12.61 V at 60.0 C
+== 2. Input LOW (AUS inactive): largest device off-state sink current that still reads LOW
+  T=-10.0: reads LOW up to 159.3 uA sink current per AUS line
+  T= 25.0: reads LOW up to 181.6 uA sink current per AUS line
+  T= 60.0: reads LOW up to 207.7 uA sink current per AUS line
+== 3. Output ON: weakest drive (CTR min x EOL, VDD 3.2, Rout 50, VF +0.15) at hottest/coldest, 21.6 and 30 V
+  T=-10.0 V=21.6 RL= open: EIN= 20.72 V I=  0.00 mA  U6 VCE=0.102  Q1 VCE=0.005  IF=4.82 mA  P_R20=0 mW
+  T=-10.0 V=21.6 RL=  47k: EIN= 20.28 V I=  0.43 mA  U6 VCE=0.102  Q1 VCE=0.009  IF=4.82 mA  P_R20=0 mW
+  T=-10.0 V=21.6 RL=  10k: EIN= 18.80 V I=  1.88 mA  U6 VCE=0.102  Q1 VCE=0.020  IF=4.82 mA  P_R20=4 mW
+  T=-10.0 V=21.6 RL= 4.7k: EIN= 17.02 V I=  3.62 mA  U6 VCE=0.102  Q1 VCE=0.032  IF=4.82 mA  P_R20=13 mW
+  T=-10.0 V=21.6 RL= 3.3k: EIN= 15.82 V I=  4.79 mA  U6 VCE=0.102  Q1 VCE=0.039  IF=4.82 mA  P_R20=23 mW
+  T=-10.0 V=21.6 RL= 2.2k: EIN= 14.15 V I=  6.43 mA  U6 VCE=0.102  Q1 VCE=0.048  IF=4.82 mA  P_R20=42 mW
+  T=-10.0 V=21.6 RL= 1.5k: EIN= 12.33 V I=  8.22 mA  U6 VCE=0.102  Q1 VCE=0.058  IF=4.82 mA  P_R20=68 mW
+  T=-10.0 V=21.6 RL=   1k: EIN= 10.26 V I= 10.26 mA  U6 VCE=0.102  Q1 VCE=0.068  IF=4.82 mA  P_R20=106 mW
+  T=-10.0 V=21.6 RL=short: EIN=  0.00 V I= 20.38 mA  U6 VCE=0.102  Q1 VCE=0.114  IF=4.82 mA  P_R20=418 mW
+  T=-10.0 V=30.0 RL= open: EIN= 29.10 V I=  0.00 mA  U6 VCE=0.114  Q1 VCE=0.005  IF=4.82 mA  P_R20=0 mW
+  T=-10.0 V=30.0 RL=  47k: EIN= 28.48 V I=  0.61 mA  U6 VCE=0.114  Q1 VCE=0.010  IF=4.82 mA  P_R20=0 mW
+  T=-10.0 V=30.0 RL=  10k: EIN= 26.41 V I=  2.64 mA  U6 VCE=0.114  Q1 VCE=0.022  IF=4.82 mA  P_R20=7 mW
+  T=-10.0 V=30.0 RL= 4.7k: EIN= 23.92 V I=  5.09 mA  U6 VCE=0.114  Q1 VCE=0.035  IF=4.82 mA  P_R20=26 mW
+  T=-10.0 V=30.0 RL= 3.3k: EIN= 22.24 V I=  6.74 mA  U6 VCE=0.114  Q1 VCE=0.044  IF=4.82 mA  P_R20=46 mW
+  T=-10.0 V=30.0 RL= 2.2k: EIN= 19.90 V I=  9.04 mA  U6 VCE=0.114  Q1 VCE=0.055  IF=4.82 mA  P_R20=82 mW
+  T=-10.0 V=30.0 RL= 1.5k: EIN= 17.34 V I= 11.56 mA  U6 VCE=0.114  Q1 VCE=0.066  IF=4.82 mA  P_R20=135 mW
+  T=-10.0 V=30.0 RL=   1k: EIN= 14.43 V I= 14.43 mA  U6 VCE=0.114  Q1 VCE=0.078  IF=4.82 mA  P_R20=210 mW
+  T=-10.0 V=30.0 RL=short: EIN=  0.00 V I= 28.67 mA  U6 VCE=0.114  Q1 VCE=0.136  IF=4.82 mA  P_R20=827 mW
+  T= 60.0 V=21.6 RL= open: EIN= 20.81 V I=  0.00 mA  U6 VCE=0.135  Q1 VCE=0.005  IF=5.02 mA  P_R20=0 mW
+  T= 60.0 V=21.6 RL=  47k: EIN= 20.36 V I=  0.43 mA  U6 VCE=0.135  Q1 VCE=0.009  IF=5.02 mA  P_R20=0 mW
+  T= 60.0 V=21.6 RL=  10k: EIN= 18.86 V I=  1.89 mA  U6 VCE=0.135  Q1 VCE=0.020  IF=5.02 mA  P_R20=4 mW
+  T= 60.0 V=21.6 RL= 4.7k: EIN= 17.06 V I=  3.63 mA  U6 VCE=0.135  Q1 VCE=0.032  IF=5.02 mA  P_R20=13 mW
+  T= 60.0 V=21.6 RL= 3.3k: EIN= 15.85 V I=  4.80 mA  U6 VCE=0.135  Q1 VCE=0.039  IF=5.02 mA  P_R20=23 mW
+  T= 60.0 V=21.6 RL= 2.2k: EIN= 14.17 V I=  6.44 mA  U6 VCE=0.135  Q1 VCE=0.049  IF=5.02 mA  P_R20=42 mW
+  T= 60.0 V=21.6 RL= 1.5k: EIN= 12.34 V I=  8.23 mA  U6 VCE=0.135  Q1 VCE=0.058  IF=5.02 mA  P_R20=69 mW
+  T= 60.0 V=21.6 RL=   1k: EIN= 10.26 V I= 10.26 mA  U6 VCE=0.135  Q1 VCE=0.069  IF=5.02 mA  P_R20=107 mW
+  T= 60.0 V=21.6 RL=short: EIN=  0.00 V I= 20.29 mA  U6 VCE=0.135  Q1 VCE=0.117  IF=5.02 mA  P_R20=417 mW
+  T= 60.0 V=30.0 RL= open: EIN= 29.18 V I=  0.00 mA  U6 VCE=0.152  Q1 VCE=0.005  IF=5.02 mA  P_R20=0 mW
+  T= 60.0 V=30.0 RL=  47k: EIN= 28.55 V I=  0.61 mA  U6 VCE=0.152  Q1 VCE=0.009  IF=5.02 mA  P_R20=0 mW
+  T= 60.0 V=30.0 RL=  10k: EIN= 26.46 V I=  2.65 mA  U6 VCE=0.152  Q1 VCE=0.022  IF=5.02 mA  P_R20=7 mW
+  T= 60.0 V=30.0 RL= 4.7k: EIN= 23.95 V I=  5.09 mA  U6 VCE=0.152  Q1 VCE=0.035  IF=5.02 mA  P_R20=26 mW
+  T= 60.0 V=30.0 RL= 3.3k: EIN= 22.26 V I=  6.74 mA  U6 VCE=0.152  Q1 VCE=0.044  IF=5.02 mA  P_R20=46 mW
+  T= 60.0 V=30.0 RL= 2.2k: EIN= 19.90 V I=  9.05 mA  U6 VCE=0.152  Q1 VCE=0.055  IF=5.02 mA  P_R20=83 mW
+  T= 60.0 V=30.0 RL= 1.5k: EIN= 17.33 V I= 11.56 mA  U6 VCE=0.152  Q1 VCE=0.067  IF=5.02 mA  P_R20=135 mW
+  T= 60.0 V=30.0 RL=   1k: EIN= 14.41 V I= 14.41 mA  U6 VCE=0.151  Q1 VCE=0.080  IF=5.02 mA  P_R20=211 mW
+  T= 60.0 V=30.0 RL=short: EIN=  0.00 V I= 28.53 mA  U6 VCE=0.151  Q1 VCE=0.139  IF=5.02 mA  P_R20=825 mW
+== 4. Boot: GPIO17/18 weak pull-up against R18/R19 (strong opto, hot/cold, VDD 3.4, 30 V, 10k load)
+  T=-10.0 RPU=  70k: GPIO=0.427 V IF=    0.000 uA VBE(Q1)=   0.2 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T=-10.0 RPU=  45k: GPIO=0.621 V IF=    0.018 uA VBE(Q1)=   0.2 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T=-10.0 RPU=  30k: GPIO=0.838 V IF=    2.132 uA VBE(Q1)=   1.0 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T=-10.0 RPU=  20k: GPIO=0.960 V IF=   26.554 uA VBE(Q1)=  52.7 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T=-10.0 RPU=  15k: GPIO=1.008 V IF=   59.383 uA VBE(Q1)= 196.9 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T=-10.0 RPU=  10k: GPIO=1.062 V IF=  128.360 uA VBE(Q1)= 686.9 mV EIN= 0.8061 V I_EIN=  80.608 uA
+  T=-10.0 RPU=   7k: GPIO=1.107 V IF=  217.598 uA VBE(Q1)= 791.2 mV EIN=26.5232 V I_EIN=2652.324 uA
+  T=-10.0 RPU=   5k: GPIO=1.158 V IF=  333.363 uA VBE(Q1)= 798.0 mV EIN=26.5460 V I_EIN=2654.598 uA
+  T= 25.0 RPU=  70k: GPIO=0.429 V IF=    0.005 uA VBE(Q1)=   1.2 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T= 25.0 RPU=  45k: GPIO=0.622 V IF=    0.193 uA VBE(Q1)=   1.2 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T= 25.0 RPU=  30k: GPIO=0.806 V IF=    6.680 uA VBE(Q1)=   5.5 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T= 25.0 RPU=  20k: GPIO=0.901 V IF=   35.687 uA VBE(Q1)=  69.7 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T= 25.0 RPU=  15k: GPIO=0.947 V IF=   69.776 uA VBE(Q1)= 207.0 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T= 25.0 RPU=  10k: GPIO=1.002 V IF=  140.517 uA VBE(Q1)= 640.3 mV EIN= 1.6767 V I_EIN= 167.670 uA
+  T= 25.0 RPU=   7k: GPIO=1.052 V IF=  231.233 uA VBE(Q1)= 738.9 mV EIN=26.5594 V I_EIN=2655.943 uA
+  T= 25.0 RPU=   5k: GPIO=1.107 V IF=  348.933 uA VBE(Q1)= 746.0 mV EIN=26.5854 V I_EIN=2658.538 uA
+  T= 60.0 RPU=  70k: GPIO=0.430 V IF=    0.038 uA VBE(Q1)=  59.0 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T= 60.0 RPU=  45k: GPIO=0.617 V IF=    0.983 uA VBE(Q1)=  59.1 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T= 60.0 RPU=  30k: GPIO=0.766 V IF=   12.283 uA VBE(Q1)=  67.8 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T= 60.0 RPU=  20k: GPIO=0.849 V IF=   43.828 uA VBE(Q1)= 130.9 mV EIN= 0.0000 V I_EIN=   0.000 uA
+  T= 60.0 RPU=  15k: GPIO=0.894 V IF=   78.828 uA VBE(Q1)= 246.3 mV EIN= 0.0000 V I_EIN=   0.002 uA
+  T= 60.0 RPU=  10k: GPIO=0.949 V IF=  151.564 uA VBE(Q1)= 595.3 mV EIN= 3.2109 V I_EIN= 321.095 uA
+  T= 60.0 RPU=   7k: GPIO=0.999 V IF=  244.542 uA VBE(Q1)= 685.1 mV EIN=26.5935 V I_EIN=2659.349 uA
+  T= 60.0 RPU=   5k: GPIO=1.054 V IF=  365.125 uA VBE(Q1)= 692.3 mV EIN=26.6241 V I_EIN=2662.409 uA
+== 5. Stress at Vdev 30 V vs derated limits (worst corners)
+  U6_VCE_off        28.62  limit    26.25   109.0 %  FAIL
+  Q1_VCE_off        29.34  limit       30    97.8 %  PASS
+  R1_P            0.08067  limit    0.075   107.6 %  FAIL
+  IF_in          0.002849  limit     0.03     9.5 %  PASS
+  R17_P           0.03225  limit    0.075    43.0 %  PASS
+  R20_P_short      0.8537  limit    0.075  1138.3 %  FAIL
+  R13_P           0.03545  limit    0.075    47.3 %  PASS
+  Q1_IC_short     0.02931  limit     0.15    19.5 %  PASS
+  Q1_Tj_short       62.58  limit      110    56.9 %  PASS
+  IF_out         0.006762  limit     0.03    22.5 %  PASS
+  D7_IF           0.04599  limit    0.075    61.3 %  PASS
+  at 24 V: U6 VCE_off=22.65 V (86 % of derated), R1 P=50.0 mW (67 %)
+  U6/U7 reach the derated 26.25 V at Vdev = 27.48 V; absolute 35 V at Vdev ~ 36.2 V
+== 6. Monte Carlo
+  N=4000: failures {'in_high': 0, 'in_low': 0, 'out_sat': 0, 'boot': 0, 'conv': 0}
+  worst input HIGH margin 0.661 V above VIH; worst Q1 VCE(on) 0.055 V; worst boot EIN current 0.000 uA

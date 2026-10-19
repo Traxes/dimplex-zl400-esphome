@@ -1,0 +1,6 @@
+copper islands: F=60 B=25, plated holes=51, pad flashes F=115 B=23
+nets checked: 39 (34 with 2+ pins); schematic pins: 115; problems: 0
+F.Cu: smallest copper gap between different nets 0.300 mm (['/OUTA_1'], ['/GND'])
+F.Cu: smallest gap 24V-side <-> ESP-side 7.389 mm (['/AUS_1'], ['/GND'])
+B.Cu: smallest copper gap between different nets 0.270 mm (['/+3V3'], ['unconnected-(J4-Pin_3-Pad3)'])
+B.Cu: smallest gap 24V-side <-> ESP-side 9000000000.000 mm None

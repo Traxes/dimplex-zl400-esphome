@@ -1,0 +1,10 @@
+R15_0 offen, Ausgang AUS, 60 C             EIN0= 13.277 V  VBE_Q1=  644.7 mV  VCE_U6= 28.07 V  IF_U6=  0.000 mA  GPIO_out=-0.00 V  I_D7=   8.1 mA
+R15_0 offen, Ausgang AUS, 25 C             EIN0=  0.324 V  VBE_Q1=  597.2 mV  VCE_U6= 28.13 V  IF_U6= -0.000 mA  GPIO_out=-0.00 V  I_D7=   6.8 mA
+R18_0 offen, Boot (RPU 45k), 60 C          EIN0=  0.000 V  VBE_Q1=  155.7 mV  VCE_U6= 28.36 V  IF_U6=  0.053 mA  GPIO_out=0.91 V  I_D7=   6.8 mA
+R18_0 offen, Boot (RPU 20k), 60 C          EIN0=  0.006 V  VBE_Q1=  410.0 mV  VCE_U6= 27.54 V  IF_U6=  0.116 mA  GPIO_out=0.98 V  I_D7=   6.8 mA
+Q1_0 C-E Kurzschluss, Ausgang AUS          EIN0= 26.686 V  VBE_Q1=   58.4 mV  VCE_U6= 28.65 V  IF_U6=  0.000 mA  GPIO_out=-0.00 V  I_D7=   9.5 mA
+Qo0 (U6) C-E Kurzschluss, Ausgang AUS      EIN0= 26.660 V  VBE_Q1=  732.9 mV  VCE_U6=  0.00 V  IF_U6=  0.000 mA  GPIO_out=-0.00 V  I_D7=  10.7 mA
+R13_0 Kurzschluss, Ausgang EIN             EIN0= 26.617 V  VBE_Q1=  955.9 mV  VCE_U6= 27.68 V  IF_U6=  5.976 mA  GPIO_out=3.09 V  I_D7=  26.0 mA
+R11_0 Kurzschluss, Ausgang EIN             EIN0= 26.660 V  VBE_Q1=  732.9 mV  VCE_U6=  0.03 V  IF_U6= 59.193 mA  GPIO_out=1.34 V  I_D7=  10.7 mA
+R20_0 Kurzschluss + EIN-Kurzschluss, EIN   EIN0=  0.000 V  VBE_Q1=  808.6 mV  VCE_U6=  0.09 V  IF_U6=  5.976 mA  GPIO_out=3.09 V  I_D7= 201.8 mA
+D8 Kurzschluss (nur Schutzverlust)         EIN0= 26.660 V  VBE_Q1=  733.5 mV  VCE_U6=  0.09 V  IF_U6=  5.976 mA  GPIO_out=3.09 V  I_D7=  10.8 mA

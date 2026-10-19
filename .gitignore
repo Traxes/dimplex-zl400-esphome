@@ -1,0 +1,29 @@
+# Zugangsdaten
+secrets.yaml
+*.secret
+.env
+
+# ESPHome-Build
+.esphome/
+**/.pioenvs/
+**/.piolibdeps/
+
+# KiCad lokal
+*.lck
+*.kicad_prl
+fp-info-cache
+*-backups/
+_autosave-*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv*/
+
+# Fusion-Archive (können Konto-Metadaten enthalten – Modell wird per Skript erzeugt)
+*.f3d
+
+# Betriebssystem
+Thumbs.db
+.DS_Store

@@ -1,0 +1,12 @@
+Verifikation Controller v3, 15.10.2026 - Skripte und Rohergebnisse zum Bericht QA_Verifikation_2026-10-15.md
+
+Ausfuehren mit KiCad-Python (ngspice-DLL): "C:\Program Files\KiCad\10.0\bin\python.exe" wcca_run.py
+  models.py     Bauteilmodelle (Quellen im Kopf der Datei: Everlight EL817 Rev.15, Fairchild MMBT3906-Modell, Semtech 1N4148W)
+  board.py      Gesamtnetzliste Controller v3 fuer ngspice, parametrisiert
+  wcca_run.py   Worst-Case (Ecken), Grenzwertsuche, Derating, Monte Carlo -> wcca_out.txt, wcca_results.json
+  faults.py     Einzelfehler-Injektion (DFMEA) -> faults_out.txt
+  bringup.py    Sollwertbaender fuer die Inbetriebnahme (24,0 V, Emulator) -> bringup_out.txt
+  fit_check.py  Modell gegen Datenblattwerte -> fit_check_out.txt
+gerber_check.py mit normalem Python + gerbonara/shapely (pip install gerbonara shapely, Pfad venv_geo im Skript anpassen):
+  python -I gerber_check.py <entpackte gerbers.zip> ESP24V_HA_XIAO schaltplan_netzliste_controller.xml -> gerber_check_out.txt
+xiao_pos.py liest die Antennenposition aus Seeeds XIAO-ESP32-C6-PCB-Zip (files.seeedstudio.com, SCH&PCB_260114).

@@ -1,0 +1,647 @@
+# =====================================================================
+# Trax HA – Steuerung Dimplex ZL 400 VF, Controller v3
+# Seeed XIAO ESP32-C6, ESP-IDF
+#
+# Grundlage: QA_Verifikation_2026-10-15.md (Abschnitte 6 und 7) und
+# HANDOVER_QA_PCB.md. Die Stell-Logik (vent_step, Boot-Sync, Fan mit
+# 3 Stufen) stammt aus perfkitchenvent.yaml (ESP32-DevKit mit Relais).
+#
+# Pinbelegung:
+#   AUS_0 Fehler/Filter   D0   GPIO0    Eingang, HIGH = aktiv
+#   AUS_1 Stufe 1         D1   GPIO1    Eingang
+#   AUS_2 Stufe 2         D4   GPIO22   Eingang
+#   AUS_3 Stufe 3         D5   GPIO23   Eingang
+#   AUS_4 Automatik       D6   GPIO16   Eingang (UART0 TX → Logger auf USB)
+#   EIN_0 Taste hoch      D10  GPIO18   Ausgang, HIGH = Druck
+#   EIN_1 Taste runter    D7   GPIO17   Ausgang (UART0 RX)
+#   RF-Schalter-Versorgung     GPIO3    LOW = an (Seeed Q3/R21), F1
+#   Antennenwahl               GPIO14   LOW = interne Antenne
+#
+# Zugangsdaten stehen nur in secrets.yaml:
+#   wifi_ssid, wifi_password, api_key, ota_password, ap_password
+# =====================================================================
+
+substitutions:
+  name: trax-ha-c6
+  # Wie in der alten Steuerung: Die HA-Entitäts-IDs (fan.espperfventilation_…)
+  # bleiben gleich, sobald das alte Gerät in HA entfernt ist.
+  friendly_name: ESPPerfVentilation
+  # F6: höchstens 300 ms pro Druck, nie Wiederholung ohne Pause
+  puls: 300ms
+  pause: 700ms
+  # F4: so lange darf die Rückmeldung über AUS nach einem Druck dauern
+  rueckmeldung: 2s
+  # Ist-Stufe direkt aus den gefilterten Eingängen, höchste aktive gewinnt
+  stufe_ist: "(id(vent_level_3).state ? 3 : (id(vent_level_2).state ? 2 : (id(vent_level_1).state ? 1 : 0)))"
+
+esphome:
+  name: ${name}
+  friendly_name: ${friendly_name}
+  on_boot:
+    # F1: RF-Schalter versorgen und interne Antenne wählen, bevor das WLAN
+    # startet (WiFi-Setup-Priorität 250). Die gpio-Ausgänge treiben bei ihrem
+    # eigenen Setup (Priorität 800) ebenfalls LOW; das hier ist die
+    # ausdrückliche Absicherung aus dem QA-Bericht.
+    - priority: 900
+      then:
+        - output.turn_off: rf_switch_pwr
+        - output.turn_off: ant_select
+
+    # Boot-Synchronisierung wie bisher: Eingänge 2 s einschwingen lassen
+    # (GPIO16 trägt im ROM-Bootloader noch das Bootlog), dann die
+    # Fan-Entität auf die echte Stufe setzen. Erst danach sind Drücke erlaubt.
+    - priority: -100
+      then:
+        - delay: 2s
+        - lambda: |-
+            int level = ${stufe_ist};
+            id(last_level) = level;
+            ESP_LOGI("BOOT", "Boot-Sync: physische Stufe = %d", level);
+            id(fan_sync).execute(level);
+            id(fremdwechsel_sensor).publish_state(0);
+            id(booting) = false;
+            ESP_LOGI("BOOT", "Boot-Sync abgeschlossen, Tastendrücke freigegeben");
+
+esp32:
+  variant: esp32c6
+  framework:
+    type: esp-idf
+
+logger:
+  level: INFO
+  # GPIO16/17 sind UART0 und hier als Ein-/Ausgang belegt
+  hardware_uart: USB_SERIAL_JTAG
+  logs:
+    sensor: WARN
+    fan: INFO
+    script: INFO
+
+api:
+  encryption:
+    key: !secret api_key
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  # Fallback-Hotspot (Captive Portal), falls das WLAN nicht erreichbar ist
+  ap:
+    ssid: "Trax-HA-C6 Fallback"
+    password: !secret ap_password
+
+captive_portal:
+
+globals:
+  - id: target_level
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: vent_failed
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: fan_adjusting
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  # +1 = hoch, -1 = runter, 0 = kein Druck
+  - id: vent_dir
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: last_level
+    type: int
+    restore_value: no
+    initial_value: '-1'
+
+  - id: booting
+    type: bool
+    restore_value: no
+    initial_value: 'true'
+
+  # true, solange die Firmware die Fan-Entität nur nachführt (keine Drücke)
+  - id: syncing
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  # Drücke pro Befehl insgesamt (Obergrenze gegen Endlosschleifen)
+  - id: adjust_attempts
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: retry_count
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: backoff_delay
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+  - id: step_start_level
+    type: int
+    restore_value: no
+    initial_value: '-1'
+
+  # Zählt jede Zustandsänderung an den 5 AUS-Eingängen (F4)
+  - id: aus_changes
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  - id: aus_changes_at_press
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  # millis() beim letzten eigenen Druck (Plausibilität)
+  - id: letzter_druck_ms
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  # letzter_druck_ms vor dem aktuellen Schritt → wurde wirklich gedrückt?
+  - id: druck_ms_vorher
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+  # F4: letzter Druck ohne jede AUS-Änderung → Status gestört/unbekannt
+  - id: keine_rueckmeldung
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  # Stufe lief entgegen der eigenen Druckrichtung → Verdacht Dauerdruck
+  - id: verdacht_dauerdruck
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+  - id: fremdwechsel
+    type: uint32_t
+    restore_value: no
+    initial_value: '0'
+
+script:
+  # Ein einzelner Tastendruck. mode: single → nie zwei Drücke gleichzeitig,
+  # Puls + Pause laufen immer komplett durch.
+  - id: taste_druecken
+    mode: single
+    parameters:
+      richtung: int
+    then:
+      - if:
+          condition:
+            lambda: |-
+              if (id(booting)) {
+                ESP_LOGW("TASTE", "Druck verweigert: Boot nicht abgeschlossen");
+                return false;
+              }
+              if (id(out_hoch).state || id(out_runter).state) {
+                ESP_LOGE("TASTE", "Druck verweigert: ein Ausgang ist noch aktiv (Interlock)");
+                return false;
+              }
+              return richtung == 1 || richtung == -1;
+          then:
+            - if:
+                condition:
+                  lambda: return richtung > 0;
+                then:
+                  - switch.turn_on: out_hoch
+                else:
+                  - switch.turn_on: out_runter
+            - delay: ${puls}
+            - switch.turn_off: out_hoch
+            - switch.turn_off: out_runter
+            - delay: ${pause}
+
+  # Fan-Entität auf die physische Stufe setzen, ohne einen Druck auszulösen
+  - id: fan_sync
+    parameters:
+      stufe: int
+    then:
+      - lambda: |-
+          id(syncing) = true;
+          if (stufe <= 0) {
+            // Speed 1 merken: "Ein" ohne Stufe startet wie bisher mit Stufe 1
+            auto call = id(ventilation).turn_off();
+            call.set_speed(1);
+            call.perform();
+          } else {
+            auto call = id(ventilation).turn_on();
+            call.set_speed(stufe);
+            call.perform();
+          }
+          id(syncing) = false;
+
+  # Stell-Schleife wie in der alten Datei: drücken, Rückmeldung abwarten,
+  # begrenzt wiederholen mit Backoff 1 s / 2 s / 4 s / 4 s.
+  - id: vent_step
+    mode: single
+    then:
+      - while:
+          condition:
+            lambda: return id(fan_adjusting);
+          then:
+            # --- Zustand bewerten, Richtung festlegen ---
+            - lambda: |-
+                int current = ${stufe_ist};
+                int target  = id(target_level);
+                id(vent_dir) = 0;
+
+                ESP_LOGI("ADJUST", "Schritt: ist=%d ziel=%d retry=%d",
+                         current, target, id(retry_count));
+
+                if (current == target) {
+                  ESP_LOGI("ADJUST", "Ziel erreicht");
+                  id(fan_adjusting) = false;
+                  return;
+                }
+
+                if (id(retry_count) >= 4 || id(adjust_attempts) >= 10) {
+                  ESP_LOGE("ADJUST", "Abbruch nach %d Wiederholungen / %d Drücken",
+                           id(retry_count), id(adjust_attempts));
+                  id(vent_failed) = true;
+                  id(fan_adjusting) = false;
+                  return;
+                }
+
+                // Ziel Aus → runter, aus Aus → hoch, sonst Richtung zum Ziel
+                id(vent_dir) = (target > current) ? 1 : -1;
+                id(step_start_level) = current;
+                id(aus_changes_at_press) = id(aus_changes);
+                id(druck_ms_vorher) = id(letzter_druck_ms);
+                id(adjust_attempts)++;
+
+            - if:
+                condition:
+                  lambda: return id(fan_adjusting);
+                then:
+                  # vorheriger Puls samt Pause muss durch sein
+                  - script.wait: taste_druecken
+                  - script.execute:
+                      id: taste_druecken
+                      richtung: !lambda return id(vent_dir);
+
+                  # --- F4: Rückmeldung über die AUS-Eingänge abwarten ---
+                  - wait_until:
+                      condition:
+                        lambda: return ${stufe_ist} != id(step_start_level);
+                      timeout: ${rueckmeldung}
+                  # Übergang einschwingen lassen (n → n±1 kann kurz 0 zeigen)
+                  - delay: 400ms
+
+                  # --- Ergebnis bewerten ---
+                  - lambda: |-
+                      int now   = ${stufe_ist};
+                      int start = id(step_start_level);
+                      int dir   = id(vent_dir);
+                      bool reaktion = id(aus_changes) != id(aus_changes_at_press);
+                      id(backoff_delay) = 0;
+                      id(last_level) = now;
+
+                      // Druck verweigert (Boot/Interlock) → kein F4-Fall, abbrechen
+                      if (id(letzter_druck_ms) == id(druck_ms_vorher)) {
+                        ESP_LOGE("ADJUST", "Kein Druck ausgeführt, Einstellung abgebrochen");
+                        id(vent_failed) = true;
+                        id(fan_adjusting) = false;
+                        return;
+                      }
+
+                      if (now != start) {
+                        id(keine_rueckmeldung) = false;
+                        id(retry_count) = 0;
+                        ESP_LOGI("ADJUST", "Rückmeldung: Stufe %d → %d", start, now);
+
+                        // Plausibilität: Stufe lief gegen die Druckrichtung
+                        if ((now > start) != (dir > 0)) {
+                          id(verdacht_dauerdruck) = true;
+                          ESP_LOGE("PLAUS",
+                                   "Stufe %d → %d entgegen Druckrichtung %+d: "
+                                   "Verdacht Dauerdruck der Gegentaste (DFMEA Q1/Q2, U6/U7, R15/R16; Test T2)",
+                                   start, now, dir);
+                        }
+                        return;
+                      }
+
+                      id(retry_count)++;
+                      int delay_ms = 1000 << (id(retry_count) - 1);
+                      if (delay_ms > 4000) delay_ms = 4000;
+                      id(backoff_delay) = delay_ms;
+
+                      if (reaktion) {
+                        id(keine_rueckmeldung) = false;
+                        ESP_LOGW("ADJUST",
+                                 "AUS-Eingänge reagiert, Stufe aber unverändert (%d). "
+                                 "Wiederholung %d in %d ms", now, id(retry_count), delay_ms);
+                      } else {
+                        // F4: alle AUS = 0 ist von einem 24-V-Ausfall nicht zu unterscheiden
+                        id(keine_rueckmeldung) = true;
+                        ESP_LOGW("ADJUST",
+                                 "Keine AUS-Änderung innerhalb ${rueckmeldung} → gestört/unbekannt "
+                                 "(24 V, Kabel, EIN prüfen). Wiederholung %d in %d ms",
+                                 id(retry_count), delay_ms);
+                      }
+
+                  # --- Backoff ---
+                  - if:
+                      condition:
+                        lambda: return id(backoff_delay) > 0;
+                      then:
+                        - delay: !lambda return id(backoff_delay);
+
+      # --- Ende: Anzeige auf die echte Stufe setzen ---
+      - lambda: |-
+          int level = ${stufe_ist};
+          id(last_level) = level;
+          id(fan_sync).execute(level);
+
+  # Stufenwechsel, den die Firmware nicht selbst ausgelöst hat
+  # (Bedienteil, Automatik – oder Dauerdruck-Einzelfehler laut DFMEA)
+  - id: stufe_geaendert
+    mode: restart
+    then:
+      # Übergang einschwingen lassen
+      - delay: 400ms
+      - lambda: |-
+          int level = ${stufe_ist};
+          int alt = id(last_level);
+          if (level == alt) return;
+          id(last_level) = level;
+
+          // Boot-Sync und laufende Stell-Schleife synchronisieren selbst
+          if (id(booting)) return;
+          bool eigener = id(fan_adjusting) || (millis() - id(letzter_druck_ms) < 3000);
+          if (eigener) return;
+
+          bool autom = id(vent_auto).state;
+          id(fremdwechsel)++;
+          id(fremdwechsel_sensor).publish_state(id(fremdwechsel));
+          char buf[48];
+          snprintf(buf, sizeof(buf), "%d → %d (Automatik %s)", alt, level, autom ? "an" : "aus");
+          id(fremdwechsel_text).publish_state(std::string(buf));
+          ESP_LOGW("PLAUS",
+                   "Stufenwechsel ohne eigenen Befehl: %d → %d (Automatik %s). "
+                   "Bedienteil/Automatik oder Dauerdruck-Einzelfehler (DFMEA); "
+                   "→ 0 kann auch ein 24-V-Ausfall sein (F4)",
+                   alt, level, autom ? "an" : "aus");
+
+          id(fan_sync).execute(level);
+
+output:
+  # F1: Versorgung des RF-Antennenschalters (LOW = an)
+  - platform: gpio
+    id: rf_switch_pwr
+    pin: GPIO3
+  # LOW = interne Keramikantenne
+  - platform: gpio
+    id: ant_select
+    pin: GPIO14
+
+switch:
+  # Tastenausgänge: ohne inverted (HIGH = Druck), nach Reset immer AUS,
+  # gegenseitig verriegelt. Nur intern, damit HA keine Taste festhalten kann.
+  - platform: gpio
+    id: out_hoch
+    pin: GPIO18
+    restore_mode: ALWAYS_OFF
+    interlock: [out_runter]
+    interlock_wait_time: 200ms
+    internal: true
+    on_turn_on:
+      - lambda: id(letzter_druck_ms) = millis();
+      # Absicherung: egal wer einschaltet, nach ${puls} ist der Druck vorbei
+      - delay: ${puls}
+      - switch.turn_off: out_hoch
+
+  - platform: gpio
+    id: out_runter
+    pin: GPIO17
+    restore_mode: ALWAYS_OFF
+    interlock: [out_hoch]
+    interlock_wait_time: 200ms
+    internal: true
+    on_turn_on:
+      - lambda: id(letzter_druck_ms) = millis();
+      - delay: ${puls}
+      - switch.turn_off: out_runter
+
+button:
+  - platform: template
+    name: "Ventilation Clear Faults"
+    entity_category: config
+    on_press:
+      - lambda: |-
+          id(vent_failed) = false;
+          id(keine_rueckmeldung) = false;
+          id(verdacht_dauerdruck) = false;
+          ESP_LOGI("FAULT", "Störungen quittiert");
+
+fan:
+  - platform: template
+    id: ventilation
+    name: "Ventilation"
+    speed_count: 3
+    restore_mode: NO_RESTORE
+    # Ein Trigger für Ein/Aus/Stufe: Ziel = Stufe, oder 0 wenn aus
+    on_state:
+      - lambda: |-
+          if (id(syncing)) return;
+          if (id(booting)) {
+            ESP_LOGW("FAN", "Befehl während des Boots verworfen");
+            return;
+          }
+
+          int ziel = x->state ? x->speed : 0;
+          if (ziel < 0) ziel = 0;
+          if (ziel > 3) ziel = 3;
+          if (x->state && ziel == 0) ziel = 1;
+
+          id(target_level) = ziel;
+          id(vent_failed) = false;
+
+          // Läuft schon eine Einstellung, übernimmt sie das neue Ziel
+          if (id(fan_adjusting)) {
+            ESP_LOGI("FAN", "Neues Ziel %d während laufender Einstellung", ziel);
+            return;
+          }
+          if (ziel == ${stufe_ist}) return;
+
+          id(retry_count) = 0;
+          id(adjust_attempts) = 0;
+          id(backoff_delay) = 0;
+          id(fan_adjusting) = true;
+          id(vent_step).execute();
+
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "ESP IP Address"
+
+  - platform: template
+    id: vent_status
+    name: "Ventilation Status"
+    update_interval: never
+
+  - platform: template
+    id: fremdwechsel_text
+    name: "Ventilation Last Uncommanded Change"
+    update_interval: never
+
+binary_sensor:
+  # F9: interner Pull-down an allen Eingängen → definierter Zustand,
+  # falls R6–R10 offen sind. HIGH = aktiv.
+  - platform: gpio
+    id: vent_level_1
+    pin:
+      number: GPIO1
+      mode:
+        input: true
+        pulldown: true
+    filters:
+      - delayed_on: 200ms
+      - delayed_off: 200ms
+    internal: true
+    on_state:
+      - lambda: id(aus_changes)++;
+      - script.execute: stufe_geaendert
+
+  - platform: gpio
+    id: vent_level_2
+    pin:
+      number: GPIO22
+      mode:
+        input: true
+        pulldown: true
+    filters:
+      - delayed_on: 200ms
+      - delayed_off: 200ms
+    internal: true
+    on_state:
+      - lambda: id(aus_changes)++;
+      - script.execute: stufe_geaendert
+
+  - platform: gpio
+    id: vent_level_3
+    pin:
+      number: GPIO23
+      mode:
+        input: true
+        pulldown: true
+    filters:
+      - delayed_on: 200ms
+      - delayed_off: 200ms
+    internal: true
+    on_state:
+      - lambda: id(aus_changes)++;
+      - script.execute: stufe_geaendert
+
+  - platform: gpio
+    id: vent_auto
+    name: "Ventilation Auto"
+    pin:
+      number: GPIO16
+      mode:
+        input: true
+        pulldown: true
+    filters:
+      - delayed_on: 200ms
+      - delayed_off: 200ms
+    on_state:
+      - lambda: id(aus_changes)++;
+
+  # Fehler/Filter: die Leitung blinkt mit ~0,5 s Halbperiode (Periode noch
+  # per M6 zu messen) → delayed_off 2 s hält den Zustand während des Blinkens
+  - platform: gpio
+    id: vent_error
+    name: "Ventilation Error"
+    device_class: problem
+    pin:
+      number: GPIO0
+      mode:
+        input: true
+        pulldown: true
+    filters:
+      - delayed_on: 200ms
+      - delayed_off: 2s
+    on_state:
+      - lambda: id(aus_changes)++;
+
+  - platform: template
+    name: "Ventilation Control Failed"
+    device_class: problem
+    lambda: return id(vent_failed);
+
+  # F4: letzter Druck blieb ohne jede AUS-Änderung
+  - platform: template
+    name: "Ventilation Feedback Lost"
+    device_class: problem
+    lambda: return id(keine_rueckmeldung);
+
+  - platform: template
+    name: "Ventilation Stuck Key Suspected"
+    device_class: problem
+    lambda: return id(verdacht_dauerdruck);
+
+sensor:
+  - platform: uptime
+    name: "ESP Uptime"
+
+  # F1 / Test T9
+  - platform: wifi_signal
+    name: "WiFi Signal"
+    update_interval: 60s
+
+  # Stufe für HA; "unbekannt", solange F4 greift und alle AUS = 0 sind
+  - platform: template
+    id: vent_level
+    name: "Ventilation Level"
+    accuracy_decimals: 0
+    update_interval: never
+
+  - platform: template
+    id: fremdwechsel_sensor
+    name: "Ventilation Uncommanded Changes"
+    accuracy_decimals: 0
+    state_class: total_increasing
+    update_interval: never
+
+# Stufe und Status für HA einmal pro Sekunde berechnen, nur bei Änderung senden
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          int level = ${stufe_ist};
+          bool alle_aus = !id(vent_error).state && !id(vent_level_1).state &&
+                          !id(vent_level_2).state && !id(vent_level_3).state &&
+                          !id(vent_auto).state;
+
+          float wert = (id(keine_rueckmeldung) && alle_aus) ? NAN : (float) level;
+          float bisher = id(vent_level).state;
+          bool gleich = id(vent_level).has_state() &&
+                        ((std::isnan(wert) && std::isnan(bisher)) || wert == bisher);
+          if (!gleich) id(vent_level).publish_state(wert);
+
+          char buf[64];
+          if (id(booting))                   snprintf(buf, sizeof(buf), "Start");
+          else if (id(verdacht_dauerdruck))  snprintf(buf, sizeof(buf), "Verdacht Dauerdruck – Hardware prüfen (T2)");
+          else if (id(vent_failed))          snprintf(buf, sizeof(buf), "Steuerung fehlgeschlagen");
+          else if (id(keine_rueckmeldung))   snprintf(buf, sizeof(buf), "Gestört/unbekannt – keine Rückmeldung");
+          else if (id(fan_adjusting))        snprintf(buf, sizeof(buf), "Stellt ein: %d → %d", level, id(target_level));
+          else if (alle_aus)                 snprintf(buf, sizeof(buf), "Aus (oder 24 V fehlt)");
+          else                               snprintf(buf, sizeof(buf), "OK");
+          std::string s(buf);
+          if (!id(vent_status).has_state() || id(vent_status).state != s) {
+            id(vent_status).publish_state(s);
+          }
