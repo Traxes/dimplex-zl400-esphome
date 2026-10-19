@@ -145,6 +145,10 @@ Details are in [`docs/qa/QA_Verifikation_2026-10-15.md`](docs/qa/QA_Verifikation
 
 Local paths are replaced by `<PROJEKT>` / `<HOME>`; adjust them before running.
 
+## License
+
+[MIT](LICENSE): free to use, build, modify and share, also commercially, as long as the license notice is kept. Symbols and footprints embedded in the KiCad files come from the KiCad libraries (CC-BY-SA 4.0 with the KiCad design exception) and do not restrict your own boards.
+
 ## Disclaimer
 
 Dimplex and ZL 400 VF are trademarks of Glen Dimplex Deutschland GmbH; XIAO is a trademark of Seeed Studio. This project is not affiliated with or endorsed by either company.

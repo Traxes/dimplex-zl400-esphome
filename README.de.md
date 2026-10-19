@@ -152,6 +152,10 @@ Ausführlich in [`docs/qa/QA_Verifikation_2026-10-15.md`](docs/qa/QA_Verifikatio
 
 Lokale Pfade sind durch `<PROJEKT>` bzw. `<HOME>` ersetzt und müssen vor der Benutzung angepasst werden.
 
+## Lizenz
+
+[MIT](LICENSE): kostenlos nutzbar, nachbaubar, veränderbar und weitergebbar, auch gewerblich. Der Lizenzhinweis muss erhalten bleiben. Die in den KiCad-Dateien eingebetteten Symbole und Footprints stammen aus den KiCad-Bibliotheken (CC-BY-SA 4.0 mit KiCad-Ausnahme für Designs) und schränken eigene Platinen nicht ein.
+
 ## Hinweise
 
 Dimplex und ZL 400 VF sind Marken der Glen Dimplex Deutschland GmbH, XIAO ist eine Marke von Seeed Studio. Dieses Projekt steht mit keinem der beiden Unternehmen in Verbindung.
