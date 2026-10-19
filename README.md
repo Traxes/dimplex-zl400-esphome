@@ -25,7 +25,7 @@ A drop-in replacement for the wall control panel (“Bedienelement Typ 1”) of 
 **Status (2026-10-19):** installed and running in a ZL 400 VF. Live test off → 1 → 3 → 2 → off: LED feedback within 3 s for every step, no fault flags.
 
 > [!WARNING]
-> The ventilation unit contains mains voltage (230 V). Connect only with the unit disconnected from mains and only if you are qualified to do so (see the Dimplex installation manual). Build at your own risk. This is not a Dimplex product.
+> The ventilation unit contains mains voltage (230 V). Read the **[safety notes](#safety)** before you open the unit or connect anything. Build at your own risk. This is not a Dimplex product.
 
 ## Contents
 
@@ -37,6 +37,45 @@ A drop-in replacement for the wall control panel (“Bedienelement Typ 1”) of 
 | [`gehaeuse`](gehaeuse) | Enclosure: STL, 3MF, Bambu Studio project, STEP, Fusion 360 script |
 | [`docs`](docs) | QA reports, interactive commissioning checklist, images, dimension sheet |
 | [`tools`](tools) | Python scripts used for QA, simulation and fabrication checks |
+
+## Safety
+
+> [!CAUTION]
+> Working on the ventilation unit can be **life-threatening**: there is mains voltage (230 V) inside. Read this section completely before you start.
+
+**Electrical**
+
+- Before opening the unit or the terminal compartment, disconnect it from mains **on all poles** (circuit breaker or isolating switch). Secure it against being switched back on and verify that it is dead. Work on mains wiring is for qualified electricians only.
+- The controller is designed **only for the unit's 24 V DC control circuit** (PCB3 terminals `+`, `−`, `AUS_x`, `EIN_x`).
+  - Never connect any terminal to mains or to another voltage source.
+  - The absolute maximum is 30 V; above 27.5 V parts run outside their derating limits.
+- Measure `+` to `−` on PCB3 (DC volts) and check every wire against the [wiring diagram](#wiring) before you connect the controller. Swapping `+` and `−` is blocked by diodes; other wiring mistakes are not.
+- Use **ferrules** on stranded wires, strip only as much as the terminal needs, and pull-test every wire. A stray strand can short the unit's 24 V supply.
+- Leave all other PCB3 terminals untouched. In particular, keep the **RM (smoke detector) bridge** in place: it is a safety shutdown input of the unit.
+- Do not connect other loads to the unit's 24 V supply. Its transformer is only rated for a few control panels and sensors (Dimplex manual, table 4.1).
+
+**ESP / USB side**
+
+- Power the XIAO only from a **certified USB power supply** (safety extra-low voltage, CE marked). Never feed it from the unit's 24 V.
+- Never connect USB ground or any ESP pin to the unit's wiring. The isolation between the two sides must stay intact.
+
+**Enclosure and location**
+
+- The printed enclosure is **not flame-retardant**: PLA and PETG are not UL 94 V-0. The controller dissipates only milliwatts, but keep it away from heat sources and out of the air stream of electric heater coils.
+- PLA softens from about 55 °C; use PETG or ASA for warm locations.
+- Install only in dry, frost-free rooms (the same requirements as for the unit itself): no condensation, no outdoor use.
+- Close the lid before operation; it protects the terminals against accidental contact.
+
+**Ventilation function**
+
+- Home ventilation protects the building against moisture and mould. Make sure your automations **can never keep the unit off for long periods**, and keep the minimum ventilation required for your building (in Germany, for example, the moisture-protection level of DIN 1946-6).
+- If a **fireplace or other combustion appliance** shares the air volume, the safety devices required for that combination (for example a pressure monitor) stay mandatory. This controller does not replace them, and remote control must never override them.
+- The unit's own protective functions (frost protection, smoke-detector shutdown, filter alarm) stay active. Do not bypass them.
+- A Wi-Fi or firmware fault can leave the unit at its last stage. Watch `control_failed` and `feedback_lost` in Home Assistant; the unit's own display and buttons keep working as a fallback.
+
+**Liability**
+
+- Building and using this is at your own risk. Connecting third-party electronics may affect the warranty of the ventilation unit. The documents come without any guarantee of correctness. This project is not affiliated with Dimplex.
 
 ## How it works
 

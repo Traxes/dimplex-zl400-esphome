@@ -25,7 +25,7 @@ Ersatz für das Wand-Bedienelement („Bedienelement Typ 1“) der Lüftungsger�
 **Stand 19.10.2026:** Eingebaut und in Betrieb an einer ZL 400 VF. Funktionstest Aus → 1 → 3 → 2 → Aus: LED-Rückmeldung bei jedem Schritt innerhalb von 3 s, keine Störmeldung.
 
 > [!WARNING]
-> Im Lüftungsgerät liegen 230 V. Anschlussarbeiten nur im spannungslosen Zustand und nur durch eine Fachkraft (siehe Dimplex-Installationsanleitung). Nachbau auf eigene Gefahr. Kein Produkt von Dimplex.
+> Im Lüftungsgerät liegen 230 V. Vor dem Öffnen des Geräts und vor jedem Anschließen die **[Sicherheitshinweise](#sicherheit)** lesen. Nachbau auf eigene Gefahr. Kein Produkt von Dimplex.
 
 ## Inhalt
 
@@ -37,6 +37,45 @@ Ersatz für das Wand-Bedienelement („Bedienelement Typ 1“) der Lüftungsger�
 | [`gehaeuse`](gehaeuse) | Gehäuse: STL, 3MF, Bambu-Studio-Projekt, STEP, Fusion-360-Skript |
 | [`docs`](docs) | Prüfberichte, interaktiver Inbetriebnahme-Prüfplan, Bilder, Maßblatt |
 | [`tools`](tools) | Python-Skripte für QA, Simulation und Fertigungsdaten-Check |
+
+## Sicherheit
+
+> [!CAUTION]
+> Arbeiten am Lüftungsgerät können **lebensgefährlich** sein: Im Gerät liegt Netzspannung (230 V). Diesen Abschnitt vor Beginn vollständig lesen.
+
+**Elektrik**
+
+- Vor dem Öffnen des Geräts oder des Klemmenraums das Gerät **allpolig** vom Netz trennen (Sicherungsautomat bzw. Trennvorrichtung). Gegen Wiedereinschalten sichern und Spannungsfreiheit feststellen. Arbeiten an der Netzverdrahtung gehören in die Hände einer Elektrofachkraft.
+- Der Controller ist **nur für den 24-V-DC-Steuerkreis** des Geräts gedacht (PCB3-Klemmen `+`, `−`, `AUS_x`, `EIN_x`).
+  - Keine Klemme jemals an Netzspannung oder eine andere Spannungsquelle anschließen.
+  - Absolut höchstens 30 V; über 27,5 V arbeiten Bauteile außerhalb ihrer Derating-Grenzen.
+- Vor dem Anschließen an PCB3 zwischen `+` und `−` messen (Gleichspannung) und jede Ader mit dem [Verkabelungsplan](#verkabelung) vergleichen. Eine Verpolung von `+`/`−` fangen Dioden ab, andere Verdrahtungsfehler nicht.
+- Bei Litzen **Aderendhülsen** verwenden, nur so weit abisolieren, wie die Klemme braucht, und jede Ader mit Zugprobe prüfen. Eine abstehende Litze kann die 24-V-Versorgung des Geräts kurzschließen.
+- Die übrigen Klemmen auf PCB3 nicht verändern. Vor allem die **Brücke RM (Rauchmelder)** muss bleiben; sie ist ein Sicherheits-Abschalteingang des Geräts.
+- Keine weiteren Verbraucher an die 24 V des Geräts hängen. Der Trafo ist nur für wenige Bedienelemente und Sensoren ausgelegt (Dimplex-Anleitung, Tabelle 4.1).
+
+**ESP- / USB-Seite**
+
+- Den XIAO nur aus einem **geprüften USB-Netzteil** versorgen (Schutzkleinspannung, CE-Kennzeichnung). Niemals aus den 24 V des Geräts speisen.
+- USB-Masse oder ESP-Pins nie mit der Geräteverdrahtung verbinden. Die Trennung zwischen beiden Seiten muss erhalten bleiben.
+
+**Gehäuse und Einbauort**
+
+- Das gedruckte Gehäuse ist **nicht flammhemmend**: PLA und PETG erreichen nicht UL 94 V-0. Der Controller setzt nur Milliwatt um, trotzdem nicht in die Nähe von Wärmequellen und nicht in den Luftstrom eines elektrischen Heizregisters montieren.
+- PLA wird ab etwa 55 °C weich; für warme Orte PETG oder ASA verwenden.
+- Nur in trockenen, frostfreien Räumen einbauen (gleiche Anforderungen wie an das Gerät): kein Kondenswasser, nicht im Freien.
+- Vor dem Betrieb den Deckel schließen; er schützt die Klemmen vor zufälliger Berührung.
+
+**Lüftungsfunktion**
+
+- Die Wohnungslüftung schützt das Gebäude vor Feuchte und Schimmel. Automationen so bauen, dass das Gerät **nie längere Zeit aus bleibt**, und die für das Gebäude nötige Mindestlüftung einhalten (z. B. Feuchteschutz nach DIN 1946-6).
+- Teilt sich eine **Feuerstätte** (Kamin, Gastherme ohne eigene Zuluft o. Ä.) den Luftraum mit der Lüftung, bleiben die dafür vorgeschriebenen Sicherheitseinrichtungen (z. B. Unterdruckwächter) Pflicht. Dieser Controller ersetzt sie nicht, und eine Fernsteuerung darf sie nie übersteuern.
+- Die Schutzfunktionen des Geräts (Frostschutz, Rauchmelder-Abschaltung, Filtermeldung) bleiben aktiv und dürfen nicht umgangen werden.
+- Bei einem WLAN- oder Firmware-Fehler kann das Gerät auf der letzten Stufe stehen bleiben. In Home Assistant `control_failed` und `feedback_lost` überwachen; Display und Tasten am Gerät funktionieren weiter als Rückfallebene.
+
+**Haftung**
+
+- Nachbau und Betrieb auf eigene Gefahr. Der Anschluss fremder Elektronik kann die Gewährleistung bzw. Garantie des Lüftungsgeräts berühren. Für die Richtigkeit der Unterlagen wird keine Gewähr übernommen. Dieses Projekt steht in keiner Verbindung zu Dimplex.
 
 ## Funktionsweise
 
