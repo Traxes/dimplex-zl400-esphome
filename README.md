@@ -2,12 +2,17 @@
 
 **English** · [Deutsch](README.de.md)
 
-A drop-in replacement for the wall control panel (“Bedienelement Typ 1”) of **Dimplex ZL 300 VF / ZL 400 VF** home ventilation units. A Seeed **XIAO ESP32-C6** reads the unit's five 24 V status outputs through optocouplers and “presses” the up/down buttons with optocoupler-driven PNP switches. In Home Assistant the unit shows up as a normal fan with three speeds.
+> [!TIP]
+> **Want a ready-made one?** I can build the assembled PCB and the 3D-printed enclosure for you – **in any color**, and the case can be adapted to your installation (shape, mounting, cable exits). If you're interested, **[open a request](https://github.com/Traxes/dimplex-zl400-esphome/issues/new?title=Request%3A%20ready-made%20controller&body=Hi%21%20I%20am%20interested%20in%20a%20ready-made%20controller%20%28assembled%20PCB%20%2B%203D-printed%20enclosure%29.%0A%0A-%20Quantity%3A%0A-%20Enclosure%20color%3A%0A-%20Changes%20to%20the%20enclosure%20%28optional%29%3A%0A-%20Shipping%20country%3A%0A%0A%28Please%20do%20not%20post%20your%20address%20or%20phone%20number%20here%20%E2%80%93%20details%20are%20arranged%20privately.%29)**. Please don't post your address or phone number in the issue – details are arranged privately.
 
 <p align="center">
-  <img src="docs/bilder/controller_v3_vorschau.jpg" width="48%" alt="Controller v3 PCB">
-  <img src="docs/bilder/gehaeuse_gesamt.jpg" width="48%" alt="Printed enclosure with wires">
+  <img src="docs/bilder/foto_eingebaut.jpg" width="45%" alt="Controller installed on top of a Dimplex ZL 400 VF">
+  &nbsp;
+  <img src="docs/bilder/foto_platine_gehaeuse.jpg" width="45%" alt="Assembled controller v3 in the printed enclosure">
 </p>
+<p align="center"><sub>Left: installed on a ZL 400 VF, wires to the unit's terminal board. Right: controller v3 in the printed case (lid removed).</sub></p>
+
+A drop-in replacement for the wall control panel (“Bedienelement Typ 1”) of **Dimplex ZL 300 VF / ZL 400 VF** home ventilation units. A Seeed **XIAO ESP32-C6** reads the unit's five 24 V status outputs through optocouplers and “presses” the up/down buttons with optocoupler-driven PNP switches. In Home Assistant the unit shows up as a normal fan with three speeds.
 
 **Highlights**
 
@@ -56,7 +61,10 @@ Set the unit to **service menu 20 → 21 Bedienelement → “Typ1”**. Termina
 
 ### 1. PCB
 
-<p align="center"><img src="docs/bilder/controller_v3_3d.jpg" width="70%" alt="Controller v3, 3D view"></p>
+<p align="center">
+  <img src="docs/bilder/controller_v3_vorschau.jpg" width="48%" alt="Controller v3 layout with labels">
+  <img src="docs/bilder/controller_v3_3d.jpg" width="48%" alt="Controller v3, 3D view">
+</p>
 
 1. Upload `hardware/controller-v3/fertigung-jlcpcb/gerbers.zip` to JLCPCB (2 layers, 1.6 mm, 75 × 64 mm), choose PCBA Economic and add the BOM and CPL files. Q1/Q2 (SOT-23) rotation is already corrected by 180° in the CPL. Still check the placement preview.
 2. Hand-solder a Seeed **XIAO ESP32-C6** and 5.08 mm screw terminals (2-pin J1, 5-pin J2, 2-pin J3). The XIAO can be soldered directly (the enclosure is dimensioned for that) or plugged into 1×7 socket headers.
@@ -105,9 +113,10 @@ LED feedback is immediate. The fans themselves need about 30–70 s to reach the
 ### 3. Enclosure
 
 <p align="center">
-  <img src="docs/bilder/gehaeuse_usb_seite.jpg" width="32%" alt="USB side">
-  <img src="docs/bilder/gehaeuse_innen.jpg" width="32%" alt="Inside">
-  <img src="docs/bilder/gehaeuse_deckel_unten.jpg" width="32%" alt="Lid underside with snap hooks">
+  <img src="docs/bilder/gehaeuse_gesamt.jpg" width="48%" alt="Enclosure with labelled wire exits">
+  <img src="docs/bilder/gehaeuse_usb_seite.jpg" width="48%" alt="USB side">
+  <img src="docs/bilder/gehaeuse_innen.jpg" width="48%" alt="Inside">
+  <img src="docs/bilder/gehaeuse_deckel_unten.jpg" width="48%" alt="Lid underside with snap hooks">
 </p>
 
 - **Size:** 80.7 × 69.8 × 24.1 mm, 95.8 mm long including the two wall-mounting tabs (slots for Ø 4 screws).

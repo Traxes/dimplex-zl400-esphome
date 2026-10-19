@@ -2,12 +2,17 @@
 
 [English](README.md) · **Deutsch**
 
-Ersatz für das Wand-Bedienelement („Bedienelement Typ 1“) der Lüftungsgeräte **Dimplex ZL 300 VF / ZL 400 VF**. Ein Seeed **XIAO ESP32-C6** liest über Optokoppler die fünf 24-V-Statusausgänge des Geräts und „drückt“ über Optokoppler und PNP-Transistoren die Tasten hoch/runter. In Home Assistant erscheint das Gerät als normaler Lüfter mit drei Stufen.
+> [!TIP]
+> **Lieber fertig kaufen?** Ich baue dir die bestückte Platine und das 3D-gedruckte Gehäuse – **in jeder Farbe**, und das Gehäuse passe ich gern an deinen Einbauort an (Form, Befestigung, Kabelausgänge). Bei Interesse einfach **[eine Anfrage stellen](https://github.com/Traxes/dimplex-zl400-esphome/issues/new?title=Anfrage%3A%20fertiger%20Controller&body=Hallo%21%20Ich%20h%C3%A4tte%20Interesse%20an%20einem%20fertigen%20Controller%20%28best%C3%BCckte%20Platine%20%2B%203D-gedrucktes%20Geh%C3%A4use%29.%0A%0A-%20Anzahl%3A%0A-%20Geh%C3%A4usefarbe%3A%0A-%20%C3%84nderungen%20am%20Geh%C3%A4use%20%28optional%29%3A%0A-%20Versandland%3A%0A%0A%28Bitte%20keine%20Adresse%20oder%20Telefonnummer%20hier%20posten%20%E2%80%93%20die%20Details%20kl%C3%A4ren%20wir%20privat.%29)**. Bitte keine Adresse oder Telefonnummer im Issue posten – die Details klären wir privat.
 
 <p align="center">
-  <img src="docs/bilder/controller_v3_vorschau.jpg" width="48%" alt="Platine Controller v3">
-  <img src="docs/bilder/gehaeuse_gesamt.jpg" width="48%" alt="Gedrucktes Gehäuse mit Adern">
+  <img src="docs/bilder/foto_eingebaut.jpg" width="45%" alt="Controller eingebaut auf einer Dimplex ZL 400 VF">
+  &nbsp;
+  <img src="docs/bilder/foto_platine_gehaeuse.jpg" width="45%" alt="Bestückter Controller v3 im gedruckten Gehäuse">
 </p>
+<p align="center"><sub>Links: eingebaut auf einer ZL 400 VF, Adern zur Klemmenplatine des Geräts. Rechts: Controller v3 im gedruckten Gehäuse (Deckel abgenommen).</sub></p>
+
+Ersatz für das Wand-Bedienelement („Bedienelement Typ 1“) der Lüftungsgeräte **Dimplex ZL 300 VF / ZL 400 VF**. Ein Seeed **XIAO ESP32-C6** liest über Optokoppler die fünf 24-V-Statusausgänge des Geräts und „drückt“ über Optokoppler und PNP-Transistoren die Tasten hoch/runter. In Home Assistant erscheint das Gerät als normaler Lüfter mit drei Stufen.
 
 **Auf einen Blick**
 
@@ -56,7 +61,10 @@ Im Gerät **Servicemenü 20 → 21 Bedienelement → „Typ1“** einstellen. Di
 
 ### 1. Platine
 
-<p align="center"><img src="docs/bilder/controller_v3_3d.jpg" width="70%" alt="Controller v3, 3D-Ansicht"></p>
+<p align="center">
+  <img src="docs/bilder/controller_v3_vorschau.jpg" width="48%" alt="Layout Controller v3 mit Beschriftung">
+  <img src="docs/bilder/controller_v3_3d.jpg" width="48%" alt="Controller v3, 3D-Ansicht">
+</p>
 
 1. `hardware/controller-v3/fertigung-jlcpcb/gerbers.zip` bei JLCPCB hochladen (2 Lagen, 1,6 mm, 75 × 64 mm), PCBA Economic wählen und BOM- und CPL-Datei dazugeben. Die Drehung von Q1/Q2 (SOT-23) ist in der CPL bereits um 180° korrigiert. Die Bestückungsvorschau trotzdem kontrollieren.
 2. Von Hand löten: Seeed **XIAO ESP32-C6** und Schraubklemmen im Raster 5,08 mm (2-polig J1, 5-polig J2, 2-polig J3). Der XIAO kann direkt eingelötet werden (darauf ist das Gehäuse ausgelegt) oder auf 1×7-Buchsenleisten stecken.
@@ -105,9 +113,10 @@ Die LED-Rückmeldung kommt sofort. Die Ventilatoren brauchen etwa 30–70 s, bis
 ### 3. Gehäuse
 
 <p align="center">
-  <img src="docs/bilder/gehaeuse_usb_seite.jpg" width="32%" alt="USB-Seite">
-  <img src="docs/bilder/gehaeuse_innen.jpg" width="32%" alt="Innenansicht">
-  <img src="docs/bilder/gehaeuse_deckel_unten.jpg" width="32%" alt="Deckel von unten mit Rasthaken">
+  <img src="docs/bilder/gehaeuse_gesamt.jpg" width="48%" alt="Gehäuse mit beschrifteten Kabelausgängen">
+  <img src="docs/bilder/gehaeuse_usb_seite.jpg" width="48%" alt="USB-Seite">
+  <img src="docs/bilder/gehaeuse_innen.jpg" width="48%" alt="Innenansicht">
+  <img src="docs/bilder/gehaeuse_deckel_unten.jpg" width="48%" alt="Deckel von unten mit Rasthaken">
 </p>
 
 - **Größe:** 80,7 × 69,8 × 24,1 mm, mit den beiden Wandlaschen 95,8 mm lang (Langlöcher für Schrauben Ø 4).
