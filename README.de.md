@@ -136,6 +136,26 @@ Im Gerät **Servicemenü 20 → 21 Bedienelement → „Typ1“** einstellen. Di
 | `sensor.<gerät>_ventilation_uncommanded_changes` | Stufenwechsel, die nicht von HA kamen |
 | `button.<gerät>_ventilation_clear_faults` | Diagnose zurücksetzen |
 
+#### In Home Assistant
+
+<p align="center"><img src="docs/bilder/home_assistant_geraet.png" width="420" alt="Geräteseite in Home Assistant mit Lüfter-Dialog, Sensoren und Aktivitätsprotokoll"></p>
+<p align="center"><sub>Geräteseite mit dem Lüfter-Dialog. Das Aktivitätsprotokoll zeigt einen echten Befehl einer Automation: Lüfter an um 22:10:00, LED-Rückmeldung für Stufe 1 in derselben Sekunde, Status „OK“ um 22:10:02.</sub></p>
+
+- Der Lüfter-Dialog zeigt **Off / Low / Medium / High**: Stufe 0–3, 0 / 33 / 66 / 100 %.
+- Die Statusmeldungen:
+
+| Status | Bedeutung |
+|---|---|
+| `OK` | Ruhezustand, Stufe über die LEDs des Geräts bestätigt |
+| `Stellt ein: 1 → 2` | Wechselt gerade von Stufe 1 auf 2 |
+| `Aus (oder 24 V fehlt)` | Gerät aus – oder gar keine 24 V bzw. kein LED-Signal |
+| `Gestört/unbekannt – keine Rückmeldung` | Ein Tastendruck hat keine LED verändert (24 V, Verkabelung, EIN prüfen) |
+| `Steuerung fehlgeschlagen` | Ziel trotz aller Wiederholungen nicht erreicht |
+| `Verdacht Dauerdruck – Hardware prüfen (T2)` | Stufe lief gegen die gedrückte Richtung – mögliche hängende Taste |
+| `Start` | Startet; Tastendrücke gesperrt bis zum ersten Abgleich |
+
+Getestet mit ESPHome 2026.9.1 auf einem XIAO ESP32-C6.
+
 **Stell-Logik:** Ein Stufenwunsch wird in einzelne Tastendrücke umgesetzt (300 ms Puls, 700 ms Pause). Nach jedem Druck wartet die Firmware bis zu 2 s, ob sich die Stufen-LEDs ändern. Tun sie es nicht, wiederholt sie mit Backoff (1/2/4/4 s, höchstens 10 Drücke). Beim Booten wird die Entität auf die echte Stufe gesetzt, ohne zu drücken.
 
 ```yaml

@@ -136,6 +136,26 @@ Set the unit to **service menu 20 → 21 Bedienelement → “Typ1”**. Termina
 | `sensor.<device>_ventilation_uncommanded_changes` | Stage changes not caused by HA |
 | `button.<device>_ventilation_clear_faults` | Reset diagnostics |
 
+#### In Home Assistant
+
+<p align="center"><img src="docs/bilder/home_assistant_geraet.png" width="420" alt="Home Assistant device page with fan dialog, sensors and activity log"></p>
+<p align="center"><sub>Device page with the fan dialog. The activity log shows a real command from an automation: fan on at 22:10:00, LED feedback for stage 1 in the same second, status “OK” at 22:10:02.</sub></p>
+
+- The fan dialog offers **Off / Low / Medium / High**: stages 0–3, 0 / 33 / 66 / 100 %.
+- The status sensor uses German texts:
+
+| Status | Meaning |
+|---|---|
+| `OK` | Idle, stage confirmed by the unit's LEDs |
+| `Stellt ein: 1 → 2` | Adjusting from stage 1 to 2 |
+| `Aus (oder 24 V fehlt)` | Unit is off – or there is no 24 V / no LED signal at all |
+| `Gestört/unbekannt – keine Rückmeldung` | A key press caused no LED change (check 24 V, wiring, EIN) |
+| `Steuerung fehlgeschlagen` | Target not reached after all retries |
+| `Verdacht Dauerdruck – Hardware prüfen (T2)` | Stage moved against the pressed direction – possible stuck key |
+| `Start` | Booting; key presses are blocked until the first sync |
+
+Tested with ESPHome 2026.9.1 on a XIAO ESP32-C6.
+
 **Control logic:** A requested speed becomes single key presses (300 ms pulse, 700 ms pause). After each press the firmware waits up to 2 s for the stage LEDs to change. If they don't, it retries with back-off (1/2/4/4 s, max. 10 presses). On boot the entity syncs to the real stage without pressing anything.
 
 ```yaml
